@@ -1,27 +1,23 @@
 import os
 
 def get_files_info(working_directory, directory="."):
-    working_dir_abs = os.path.abspath(working_directory)
-    target_dir = os.path.normpath(os.path.join(working_directory, directory))
-    # Will be True or False
-    valid_target_dir = os.path.commonpath([working_dir_abs, target_dir]) == working_dir_abs
-
-    if not valid_target_dir:
-        print(f'Error: Cannot list "{directory}" as is outside the permitted working directory')
-        return None
-    
-    if not os.path.isdir(directory):
-        print(f'Error: "{directory}" is not a directory')
-        return None
-    
-    list_of_files = ""
-    files = os.listdir(target_dir)
-    for n in [0, len(files) - 1]:
-        list_of_files += f'{files[n]} : file size= {os.path.getsize(os.path.join(target_dir, files[n]))} bytes, is_dir= {os.path.isdir(os.path.join(target_dir, files[n]))} \n'
+ 
     try:
-        return list_of_files
+        working_dir_abs = os.path.abspath(working_directory)
+        target_dir = os.path.normpath(os.path.join(working_dir_abs, directory))
+        # Will be True or False
+        valid_target_dir = os.path.commonpath([working_dir_abs, target_dir]) == working_dir_abs
+
+        if not valid_target_dir:
+            return f'Error: Cannot list "{directory}" as it is outside the permitted working directory'
+        if not os.path.isdir(target_dir):
+            return f'Error: "{directory}" is not a directory'
+        list_of_entries = []
+        for name in os.listdir(target_dir):
+            full_path = os.path.join(target_dir, name)
+            size = os.path.getsize(full_path)
+            is_dir = os.path.isdir(full_path)
+            list_of_entries.append(f'- {name}: file_size={size} bytes, is_dir={is_dir}')
+        return "\n".join(list_of_entries)    
     except Exception as e:
-        print(f'Error: {e}')
-        return None
-    
-    print(list_of_files)
+        return f'Error: {e}' 
