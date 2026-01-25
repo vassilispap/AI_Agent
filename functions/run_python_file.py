@@ -1,5 +1,9 @@
 import os
 import subprocess
+from config import MAX_CHARS
+from google import genai
+from google.genai import types
+
 
 
 def run_python_file(working_directory, file_path, args=None):
@@ -32,3 +36,38 @@ def run_python_file(working_directory, file_path, args=None):
     
     except Exception as e:
         return f"Error: executing Python file: {e}"
+    
+
+schema_run_python_file = types.FunctionDeclaration(
+    name="run_python_file",
+    description="Run a specified Python file with optional arguments",
+    parameters=types.Schema(
+        required=["file_path"],
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Directory path for the python file to run, relative to the working directory (default is the working directory itself)",
+            ),
+        },
+    ),
+)
+
+schema_write_file = types.FunctionDeclaration(
+    name="write_file",
+    description="Write the specified content to a specified file",
+    parameters=types.Schema(
+        required=["file_path", "content"],
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Directory path for the file to write to, relative to the working directory (default is the working directory itself)"
+                ),
+            "content": types.Schema(
+                type=types.Type.STRING,
+                description="Content to write to the file" 
+                ),
+        },
+    ),
+)

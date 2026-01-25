@@ -3,21 +3,8 @@ from config import MAX_CHARS
 from google import genai
 from google.genai import types
 
-schema_get_files_content = types.FunctionDeclaration(
-    name="get_files_content",
-    description="Lists files in a specified directory relative to the working directory, providing file size and directory status",
-    parameters=types.Schema(
-        type=types.Type.OBJECT,
-        properties={
-            "directory": types.Schema(
-                type=types.Type.STRING,
-                description="Directory path to list files from, relative to the working directory (default is the working directory itself)",
-            ),
-        },
-    ),
-)
-
 def get_file_content(working_directory, file_path):
+    
     try:
         working_dir_abs = os.path.abspath(working_directory)
         target_file = os.path.normpath(os.path.join(working_dir_abs, file_path))
@@ -34,4 +21,19 @@ def get_file_content(working_directory, file_path):
             return file_content_string
     except Exception as e:
         return f'Error: {e}'
-    
+
+
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Read the specified first number of characters from the content of a file",
+    parameters=types.Schema(
+        required=["file_path"],
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Directory path to read file from, relative to the working directory (default is the working directory itself)",
+            ),
+        },
+    ),
+)
