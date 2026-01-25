@@ -18,7 +18,9 @@ def run_python_file(working_directory, file_path, args=None):
         command = ["python", target_file]
         if args:
             command.extend(args)
-        newsub = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30)
+        newsub = subprocess.run(
+            command, 
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30)
         result = newsub.stdout
         if newsub.returncode != 0:
             result += "Process exited with code X"
