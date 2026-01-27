@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+        "name": "Debug main.py run tests",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/main.py",
+        "args": ["how does the calculator render results to the console?"],
+        "console": "integratedTerminal"
+        }
+    ]
+}
