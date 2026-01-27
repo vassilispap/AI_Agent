@@ -22,17 +22,21 @@ def run_python_file(working_directory, file_path, args=None):
         command = ["python", target_file]
         if args:
             command.extend(args)
+        # print(f"DEBUG abs_working_dir={working_dir_abs}, abs_file_path={working_dir_abs}")
         newsub = subprocess.run(
             command, 
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30)
         result = newsub.stdout
         if newsub.returncode != 0:
-            result += "Process exited with code X"
-        if newsub.stdout == "" or newsub.stderr != "":
-            result += "No output produced"
-        if newsub.returncode == 0  and newsub.stdout != "" and newsub.stderr == "":
-            result += f'STDOUT: {newsub.stdout} STDERR: {newsub.stderr}'
-        return result
+            result = f"Process exited with code {newsub.returncode}"
+        if not newsub.stdout and not newsub.stderr:
+            result = "No output produced"
+        if newsub.stdout:
+            result = (f"STDOUT:\n{newsub.stdout}")
+        if newsub.stderr:
+            result = (f"STDERR:\n{newsub.stderr}")
+
+        return "".join(result)
     
     except Exception as e:
         return f"Error: executing Python file: {e}"
@@ -53,21 +57,3 @@ schema_run_python_file = types.FunctionDeclaration(
     ),
 )
 
-schema_write_file = types.FunctionDeclaration(
-    name="write_file",
-    description="Write the specified content to a specified file",
-    parameters=types.Schema(
-        required=["file_path", "content"],
-        type=types.Type.OBJECT,
-        properties={
-            "file_path": types.Schema(
-                type=types.Type.STRING,
-                description="Directory path for the file to write to, relative to the working directory (default is the working directory itself)"
-                ),
-            "content": types.Schema(
-                type=types.Type.STRING,
-                description="Content to write to the file" 
-                ),
-        },
-    ),
-)

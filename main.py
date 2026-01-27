@@ -4,21 +4,18 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from prompts import system_prompt
-from call_function import available_functions
-# import call_function
+from call_function import available_functions, call_function
 
 def main():
-    load_dotenv("a.env")
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY environment variable not set")
-
     parser = argparse.ArgumentParser(description="Chatbot")
     parser.add_argument("user_prompt", type=str, help="User prompt")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")    
-
-    store_true = False
     args = parser.parse_args()
+    load_dotenv("a.env")
+    
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY environment variable not set")
     client = genai.Client(api_key=api_key)
     messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
     
@@ -33,18 +30,34 @@ def main():
         raise RuntimeError("Gemini API response appears to be malformed")
 
     if args.verbose:
-        print("User prompt: " + args.user_prompt + "\n")
         print("Prompt tokens:", response.usage_metadata.prompt_token_count)
         print("Response tokens:", response.usage_metadata.candidates_token_count)
 
-    if response.function_calls:
-        print ("Function calls:")
-        for function_call in response.function_calls:
-            print(f"Calling function: {function_call.name}({function_call.args})")
-        
-    else:
+    if not response.usage_metadata:
+        raise RuntimeError("Gemini API response appears to be malformed")
+
+    if args.verbose:
+        print("Prompt tokens:", response.usage_metadata.prompt_token_count)
+        print("Response tokens:", response.usage_metadata.candidates_token_count)
+
+    if not response.function_calls:
         print("Response:")
         print(response.text)
+        return
+
+    function_responses = []
+    for function_call in response.function_calls:
+        result = call_function(function_call, args.verbose)
+        if (
+            not result.parts
+            or not result.parts[0].function_response
+            or not result.parts[0].function_response.response
+        ):
+            raise RuntimeError(f"Empty function response for {function_call.name}")
+        if args.verbose:
+            print(f"-> {result.parts[0].function_response.response}")
+        function_responses.append(result.parts[0])
+
 
 
 if __name__ == "__main__":
